@@ -37,7 +37,7 @@ def rows_for(m, inc):
             neg.add(tuple(v))
     return pos, [list(v) for v in sorted(neg)]
 
-def build(m, inc, s, free_and=True, distinct=True, used=True, lexsb=True):
+def build(m, inc, s, free_and=True, distinct=True, used=True, lexsb=True, and_lo=None, and_hi=None):
     n = 2 * m
     pos, neg = rows_for(m, inc)
     rows = [(r, 1) for r in pos] + [(r, 0) for r in neg]
@@ -143,6 +143,15 @@ def build(m, inc, s, free_and=True, distinct=True, used=True, lexsb=True):
                 for b1 in range(g):
                     for b2 in range(b1):
                         cnf.append(dep + [-A(i, j), -A(i + 1, j), -Bv(i, b1), -Bv(i + 1, b2)])
+    if used:
+        # every input variable is read by some gate (f depends on all of them)
+        for j in range(n):
+            cnf.append([A(i, j) for i in range(s)] + [Bv(i, j) for i in range(s)])
+    ands = [isand(i) for i in range(s)]
+    if and_lo is not None:
+        cnf.extend(CardEnc.atleast(ands, and_lo, vpool=pool, encoding=EncType.seqcounter).clauses)
+    if and_hi is not None:
+        cnf.extend(CardEnc.atmost(ands, and_hi, vpool=pool, encoding=EncType.seqcounter).clauses)
     return cnf, pool, rows
 
 def decode(model, pool, m, s, free_and):
@@ -165,8 +174,10 @@ if __name__ == '__main__':
     ap.add_argument('s', type=int)
     ap.add_argument('--plain', action='store_true')
     ap.add_argument('--out', default=None)
+    ap.add_argument('--and-lo', type=int, default=None)
+    ap.add_argument('--and-hi', type=int, default=None)
     a = ap.parse_args()
     m, inc = plane(a.q)
-    cnf, pool, rows = build(m, inc, a.s, free_and=not a.plain)
+    cnf, pool, rows = build(m, inc, a.s, free_and=not a.plain, and_lo=a.and_lo, and_hi=a.and_hi)
     print('rows', len(rows), 'vars', pool.top, 'clauses', len(cnf.clauses), file=sys.stderr)
     cnf.to_file(a.out)
