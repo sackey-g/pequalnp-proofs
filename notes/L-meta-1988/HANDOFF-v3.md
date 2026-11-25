@@ -46,6 +46,29 @@ Work notes only. These are not a proof and not a submission. Nothing here is "ch
    - Conclusion: direct exact synthesis does not reach even the Fano plane. It cannot reach
      PG(2,3) at 62 gates and 756 rows.
 
+## Solver benchmark (CPU, measured)
+
+Machine: 4 vCPU container, no GPU. Instances are cycle graphs with known exact values (all
+UNSAT), made by `sat/bench_gen.py`. Runner: `sat/bench.py`, 600 s limit. Raw rows:
+`sat/results_cpu.tsv`. Wall-clock seconds:
+
+| instance | kissat 1T | cadical 1T | parafrost-cpu 1T | mallob 4T (kissat) | CnC d=8, 4 jobs |
+|---|---|---|---|---|---|
+| c8_s8   | 7.8   | 7.3     | 8.4     | 6.2     | 13.7    |
+| c8_s9   | 66.6  | 112.5   | 102.2   | 50.0    | 70.5    |
+| c8_s10  | >600  | >600    | >600    | >600    | >600    |
+| c10_s10 | >600  | >600    | >600    | >600    | >600    |
+
+- The best parallel gain is about 1.3x (Mallob, 4 threads). Cube-and-conquer (`sat/cnc.sh`,
+  march_cu `-d 8`, 256 cubes) is not faster than one kissat on these sizes. On c8_s10 it had
+  reached cube 159 of 256 at the 600 s limit, so it may finish in roughly 1000 s. It is the only
+  configuration that showed steady progress there.
+- One more gate costs about 10x more time. A 1.3x (or even 100x) speed-up moves the reachable
+  size by at most 1 or 2 gates. It does not bring Fano s = 26 or PG(2,3) s = 62 within reach.
+- GPU solvers (ParaFROST GPU, GpuShareSat) could not be measured here (no GPU). The notebook
+  `sat/gpu_bench_colab.ipynb` runs the same matrix on a Colab GPU runtime, comparing GPU against
+  CPU on that same machine. No GPU numbers are recorded yet.
+
 ## Why this is hard
 
 - The repository's own note 1 proves C(f_G) = |E| + tau(G) - 1 only under girth >= 7 with the
