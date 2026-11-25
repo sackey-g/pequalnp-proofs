@@ -35,8 +35,10 @@ Work notes only. These are not a proof and not a submission. Nothing here is "ch
 4. Results on Fano (PG(2,2)) with kissat 4.x on 4 cores:
    - Plain, s = 27 (the star exists, so the answer is SAT): kissat found no solution within
      10 minutes from scratch.
-   - Plain, s = 26 (UNSAT would mean C(Fano) >= 27): still running at the time of this commit (25-minute limit)
-   - Free AND, s = 25 (UNSAT would mean A(Fano) >= 26): still running at the time of this commit (25-minute limit)
+   - Plain, s = 26 (UNSAT would mean C(Fano) >= 27): no answer within the 25-minute limit.
+   - Free AND, s = 25 (UNSAT would mean A(Fano) >= 26): no answer within the 25-minute limit.
+   - Plain, s = 26, split into 4 cubes by the number of AND gates (7, 8, 9, 10; 4 kissat runs in
+     parallel): no cube finished. The runs were stopped after about 100 minutes of wall time.
    - Check of the UNSAT direction on known exact values (`L-meta-106`: a cycle on n vertices
      needs n + ceil(n/2) - 1 gates). C6: UNSAT for s <= 7, SAT at s = 8, which is exact.
      C8 (exact value 11): UNSAT at s = 8 in 7.8 s and at s = 9 in 70 s; s = 10 did not finish in
